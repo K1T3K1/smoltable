@@ -1,0 +1,13 @@
+
+[package]
+name = "smoltable"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+smoltable-server = { path = "../crates/smoltable-server" }
+tokio = { version = "1.49.0", features = ["full"] }
+
+[[bin]]
+name = "smoltable"
+path = "bin/main.rs"

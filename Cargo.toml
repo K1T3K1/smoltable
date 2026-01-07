@@ -1,0 +1,10 @@
+[workspace]
+members = [
+  "crates/smoltable-core",
+  "crates/smoltable-proto",
+  "crates/smoltable-server",
+  "crates/smoltable-storage",
+  "crates/smoltable-wal",
+  "smoltable/"
+]
+  resolver = "2"

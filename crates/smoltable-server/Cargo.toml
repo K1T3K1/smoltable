@@ -1,0 +1,20 @@
+[package]
+name = "smoltable-server"
+version = "0.1.0"
+authors = ["kp.zarzycki@gmail.com"]
+edition = "2024"
+repository = ""
+license = "MIT"
+
+[dependencies]
+prost = "0.14.1"
+tokio = "1.49.0"
+tonic = "0.14.2"
+tonic-prost = "0.14.2"
+smoltable-core = { path = "../smoltable-core"}
+smoltable-proto = { path = "../smoltable-proto"}
+bytes = "1.11.0"
+
+[build-dependencies]
+tonic-prost-build = "0.14.2"
+

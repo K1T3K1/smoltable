@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package table;
+
+service SmoltableTable {
+  rpc TableInsert(TableInsertRequest) returns (TableInsertResponse);
+}
+
+message RowFullKey {
+  bytes row = 1;
+  bytes family = 2;
+  bytes qualifier = 3;
+  int64 timestamp = 4;
+}
+
+message Tombstone {}
+
+message TableInsertRequest {
+  RowFullKey row_key = 1;
+  oneof value_type {
+    bytes value = 2;
+    Tombstone tombstone = 3;
+  }
+}
+
+enum InsertStatus {
+  OK = 0;
+  ERROR = 1;
+}
+
+message TableInsertResponse { InsertStatus status = 1; }

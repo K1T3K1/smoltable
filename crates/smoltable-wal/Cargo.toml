@@ -1,0 +1,8 @@
+[package]
+name = "smoltable-wal"
+version = "0.1.0"
+authors = ["kp.zarzycki@gmail.com"]
+edition = "2024"
+repository = ""
+license = "MIT"
+
