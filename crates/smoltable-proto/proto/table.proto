@@ -3,29 +3,61 @@ syntax = "proto3";
 package table;
 
 service SmoltableTable {
-  rpc TableInsert(TableInsertRequest) returns (TableInsertResponse);
+  rpc MutateRow(MutateRowRequest) returns (MutateRowResponse);
+  // rpc MutateRows(MutateRowsRequest) return (MutateRowsResponse);
+  rpc ReadRow(ReadRowRequest) returns (ReadRowResponse);
+  // TO DO:
+  // rpc ReadRows(ReadRowsRequest) returns (stream ReadRowsResponse);
 }
 
-message RowFullKey {
-  bytes row = 1;
-  bytes family = 2;
-  bytes qualifier = 3;
-  int64 timestamp = 4;
+message MutateRowRequest {
+  bytes row_key = 1;
+  repeated Mutation mutations = 2;
 }
 
-message Tombstone {}
-
-message TableInsertRequest {
-  RowFullKey row_key = 1;
-  oneof value_type {
-    bytes value = 2;
-    Tombstone tombstone = 3;
+message Mutation {
+  oneof mutation {
+    SetCell set_cell = 1;
+    DeleteFromColumn delete_from_column = 2;
   }
 }
 
-enum InsertStatus {
-  OK = 0;
-  ERROR = 1;
+message SetCell {
+  bytes family_name = 1;
+  bytes column_qualifier = 2;
+  int64 timestamp_micros = 3;
+  bytes value = 4;
 }
 
-message TableInsertResponse { InsertStatus status = 1; }
+message DeleteFromColumn {
+  bytes family_name = 1;
+  bytes column_qualifier = 2;
+}
+
+message MutateRowResponse {
+}
+
+
+message ReadRowRequest {
+  bytes row_key = 1;
+}
+
+message ReadRowResponse {
+  bytes row_key = 1;
+  repeated Family families = 2;
+}
+
+message Family {
+  string name = 1;
+  repeated Column columns = 2;
+}
+
+message Column {
+  bytes qualifier = 1;
+  repeated Cell cells = 2;
+}
+
+message Cell {
+  int64 timestamp_micros = 1;
+  bytes value = 2;
+}
