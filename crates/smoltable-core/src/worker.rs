@@ -1,4 +1,5 @@
-use crate::datapoint::{Datapoint, RetrievalKey, RetrievalStructure, Value};
+use crate::datapoint::{Datapoint, RetrievalKey, RetrievalStructure};
+use crate::errors::SmoltableError;
 use crate::memtable::Memtable;
 
 #[derive(Default)]
@@ -18,12 +19,25 @@ where
         self.memtable.insert(datapoint.full_key, datapoint.value);
     }
 
-    fn prepare_retrieval_keys(&self, key: RetrievalStructure) -> Vec<RetrievalKey> {
-        Vec::new()
+    fn validate_retrieval_keys(&self, keys: &RetrievalStructure) -> Result<(), SmoltableError> {
+        for key in &keys.retrieval_keys {
+            match (key.timestamp, key.n_last) {
+                (Some(_), None) => {}
+                (None, Some(_)) => {}
+                _ => return Err(SmoltableError::InvalidRetrievalKey),
+            }
+        }
+        Ok(())
     }
 
-    pub fn get(&self, key: RetrievalStructure) -> Vec<Vec<Datapoint>> {
-        let prepared_keys = self.prepare_retrieval_keys(key);
-        prepared_keys.into_iter().map(|key| { self.memtable.get(key) }).collect()
+    pub fn get(&self, key: RetrievalStructure) -> Result<Vec<Vec<Datapoint>>, SmoltableError> {
+        self.validate_retrieval_keys(&key)?;
+        let retrieved_data = key
+            .retrieval_keys
+            .into_iter()
+            .map(|key| self.memtable.get(key))
+            .collect();
+
+        Ok(retrieved_data)
     }
 }

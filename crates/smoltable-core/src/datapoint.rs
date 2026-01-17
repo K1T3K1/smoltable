@@ -31,16 +31,16 @@ impl PartialOrd for FullKey {
     }
 }
 
-pub struct RetrievalKey { 
+pub struct RetrievalKey {
     pub row: Bytes,
     pub family: Bytes,
     pub qualifier: Bytes,
-    pub timestamp: Option<i64>
+    pub timestamp: Option<i64>,
+    pub n_last: Option<i8>,
 }
 
 pub struct RetrievalStructure {
-    pub retrieval_key: Vec<RetrievalKey>,
-    pub n_last: i8,
+    pub retrieval_keys: Vec<RetrievalKey>,
 }
 
 #[derive(Debug, Clone)]
