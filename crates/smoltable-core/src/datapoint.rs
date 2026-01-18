@@ -1,6 +1,13 @@
 use bytes::Bytes;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CoreKey {
+    pub row: Bytes,
+    pub family: Bytes,
+    pub qualifier: Bytes,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FullKey {
     pub row: Bytes,
     pub family: Bytes,
@@ -24,6 +31,19 @@ impl PartialOrd for FullKey {
     }
 }
 
+#[derive(Clone)]
+pub struct RetrievalKey {
+    pub row: Bytes,
+    pub family: Bytes,
+    pub qualifier: Bytes,
+    pub timestamp: Option<i64>,
+    pub n_last: Option<i8>,
+}
+
+pub struct RetrievalStructure {
+    pub retrieval_keys: Vec<RetrievalKey>,
+}
+
 #[derive(Debug, Clone)]
 pub enum Value {
     Some(Bytes),
@@ -33,4 +53,23 @@ pub enum Value {
 pub struct Datapoint {
     pub full_key: FullKey,
     pub value: Value,
+}
+
+pub struct StructuredRowCell {
+    pub value: Bytes,
+    pub timestamp_micros: i64,
+}
+
+pub struct StructuredRowColumn {
+    pub qualifier: Bytes,
+    pub cells: Vec<StructuredRowCell>,
+}
+
+pub struct StructuredRowFamily {
+    pub name: Bytes,
+    pub columns: Vec<StructuredRowColumn>,
+}
+pub struct StructuredRow {
+    pub row_key: Bytes,
+    pub families: Vec<StructuredRowFamily>,
 }
