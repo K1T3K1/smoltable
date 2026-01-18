@@ -62,14 +62,13 @@ impl BMapMemtable {
                     qualifier: key.qualifier.clone(),
                     cells: Vec::new(),
                 });
+                let current_col = current_family.columns.last_mut().unwrap();
+
+                current_col.cells.push(StructuredRowCell {
+                    value: v,
+                    timestamp_micros: key.timestamp,
+                });
             }
-
-            let current_col = current_family.columns.last_mut().unwrap();
-
-            current_col.cells.push(StructuredRowCell {
-                value: v,
-                timestamp_micros: key.timestamp,
-            });
         }
 
         StructuredRow { row_key, families }
