@@ -1,4 +1,6 @@
-use crate::datapoint::{Datapoint, RetrievalKey, RetrievalStructure};
+use bytes::Bytes;
+
+use crate::datapoint::{Datapoint, RetrievalStructure, StructuredRow};
 use crate::errors::SmoltableError;
 use crate::memtable::Memtable;
 
@@ -15,6 +17,7 @@ where
         SmoltableWorker { memtable: memtable }
     }
 
+    #[inline(always)]
     pub fn insert(&mut self, datapoint: Datapoint) {
         self.memtable.insert(datapoint.full_key, datapoint.value);
     }
@@ -39,5 +42,11 @@ where
             .collect();
 
         Ok(retrieved_data)
+    }
+
+    pub fn get_row(&self, row_key: Bytes) -> Result<StructuredRow, SmoltableError> {
+        let data = self.memtable.get_row(row_key);
+
+        Ok(data)
     }
 }

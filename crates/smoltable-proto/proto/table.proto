@@ -45,7 +45,7 @@ message ReadRowResponse {
 }
 
 message Family {
-  string name = 1;
+  bytes name = 1;
   repeated Column columns = 2;
 }
 

@@ -1,18 +1,17 @@
 use bytes::Bytes;
 use smoltable_core::{
-    datapoint::{Datapoint, FullKey, RetrievalStructure, Value},
+    datapoint::{Datapoint, FullKey, Value},
+    errors::SmoltableError,
     memtable::BMapMemtable,
+    utils::time::now,
     worker::SmoltableWorker,
 };
-use smoltable_proto::proto::mutation::Mutation;
+use smoltable_proto::proto::{Cell, Column, Family, mutation::Mutation};
 use smoltable_proto::proto::{
     MutateRowRequest, MutateRowResponse, ReadRowRequest, ReadRowResponse,
     smoltable_table_server::SmoltableTable,
 };
-use std::{
-    sync::{Arc, RwLock},
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::sync::{Arc, RwLock};
 use tonic::{Request, Response, Status};
 
 #[derive(Default)]
@@ -29,17 +28,13 @@ impl SmoltableTable for SmoltableTableService {
         let req = request.into_inner();
 
         let row_key = Bytes::from(req.row_key);
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map(|d| d.as_micros() as i64)
-            .unwrap_or(0);
 
         let datapoints = req.mutations.into_iter().map(|m| match m.mutation {
             Some(Mutation::SetCell(sc)) => {
                 let ts = if sc.timestamp_micros > 0 {
                     sc.timestamp_micros
                 } else {
-                    now
+                    now()
                 };
                 Datapoint {
                     full_key: FullKey {
@@ -55,7 +50,7 @@ impl SmoltableTable for SmoltableTableService {
                 let ts = if dfc.timestamp_micros > 0 {
                     dfc.timestamp_micros
                 } else {
-                    now
+                    now()
                 };
                 Datapoint {
                     full_key: FullKey {
@@ -85,15 +80,45 @@ impl SmoltableTable for SmoltableTableService {
         &self,
         request: Request<ReadRowRequest>,
     ) -> Result<Response<ReadRowResponse>, Status> {
-        let rs = RetrievalStructure { retrieval_keys: [] };
-        {
+        let req = request.into_inner();
+
+        let structured_row = {
             let wg = self
                 .worker
                 .read()
                 .map_err(|_| Status::internal("Memtable error (lock poisoned)"))?;
 
-            return Ok(Response::new(ReadRowResponse { wg.get(rs) } ));
-        }
-        Err(Status::internal("OK"))
+            wg.get_row(req.row_key).map_err(|e| match e {
+                SmoltableError::InvalidRetrievalKey => Status::invalid_argument(e.to_string()),
+            })?
+        };
+
+        let response = ReadRowResponse {
+            row_key: structured_row.row_key,
+            families: structured_row
+                .families
+                .into_iter()
+                .map(|f| Family {
+                    name: f.name,
+                    columns: f
+                        .columns
+                        .into_iter()
+                        .map(|c| Column {
+                            qualifier: c.qualifier,
+                            cells: c
+                                .cells
+                                .into_iter()
+                                .map(|cell| Cell {
+                                    value: cell.value,
+                                    timestamp_micros: cell.timestamp_micros,
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                })
+                .collect(),
+        };
+
+        Ok(Response::new(response))
     }
 }

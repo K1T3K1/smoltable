@@ -31,6 +31,7 @@ impl PartialOrd for FullKey {
     }
 }
 
+#[derive(Clone)]
 pub struct RetrievalKey {
     pub row: Bytes,
     pub family: Bytes,
@@ -52,4 +53,23 @@ pub enum Value {
 pub struct Datapoint {
     pub full_key: FullKey,
     pub value: Value,
+}
+
+pub struct StructuredRowCell {
+    pub value: Bytes,
+    pub timestamp_micros: i64,
+}
+
+pub struct StructuredRowColumn {
+    pub qualifier: Bytes,
+    pub cells: Vec<StructuredRowCell>,
+}
+
+pub struct StructuredRowFamily {
+    pub name: Bytes,
+    pub columns: Vec<StructuredRowColumn>,
+}
+pub struct StructuredRow {
+    pub row_key: Bytes,
+    pub families: Vec<StructuredRowFamily>,
 }
