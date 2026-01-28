@@ -73,3 +73,9 @@ pub struct StructuredRow {
     pub row_key: Bytes,
     pub families: Vec<StructuredRowFamily>,
 }
+
+impl StructuredRow {
+    pub fn to_row(&self, transaction_id: i64) -> Vec<u8> {
+        Vec::new()
+    }
+}

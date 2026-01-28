@@ -743,6 +743,9 @@ version = "0.1.0"
 [[package]]
 name = "smoltable-wal"
 version = "0.1.0"
+dependencies = [
+ "smoltable-core",
+]
 
 [[package]]
 name = "socket2"

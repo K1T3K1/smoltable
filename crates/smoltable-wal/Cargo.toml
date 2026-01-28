@@ -6,3 +6,6 @@ edition = "2024"
 repository = ""
 license = "MIT"
 
+[dependencies]
+smoltable-core = { path = "../smoltable-core"}
+

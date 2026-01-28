@@ -3,23 +3,23 @@ syntax = "proto3";
 package table;
 
 service SmoltableTable {
-  rpc MutateRow(MutateRowRequest) returns (MutateRowResponse);
-  // rpc MutateRows(MutateRowsRequest) return (MutateRowsResponse);
+  rpc MutateRows(MutateRowsRequest) return (MutateRowsResponse);
   rpc ReadRow(ReadRowRequest) returns (ReadRowResponse);
   // TO DO:
   // rpc ReadRows(ReadRowsRequest) returns (stream ReadRowsResponse);
 }
 
-message MutateRowRequest {
+message MutateRowsRequest {
+  repeated RowMutation row_mutations = 1
+}
+
+message RowMutation {
   bytes row_key = 1;
   repeated Mutation mutations = 2;
 }
 
 message Mutation {
-  oneof mutation {
-    SetCell set_cell = 1;
-    DeleteFromColumn delete_from_column = 2;
-  }
+  repeated Family families = 1;
 }
 
 message SetCell {
@@ -56,5 +56,8 @@ message Column {
 
 message Cell {
   int64 timestamp_micros = 1;
-  bytes value = 2;
+  oneof operation {
+    bytes value = 2;
+    bool is_deleted = 3;
+  }
 }
